@@ -1,10 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Verify code</title>
 </head>
 <body>
-$END$
+    <h2>Enter the 2FA code</h2>
+
+    <div th:if="${param.error}" style="color:red;">
+        Неточен код!
+    </div>
+
+    <form method="post">
+        <input type="text" name="code" placeholder="6-digit code" required>
+        <button type="submit">Verify</button>
+    </form>
+
 </body>
 </html>
