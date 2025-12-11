@@ -35,12 +35,6 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        IWebExchange webExchange = JakartaServletWebApplication
-                .buildApplication(req.getServletContext())
-                .buildExchange(req, resp);
-
-        WebContext context = new WebContext(webExchange);
-
         String username = req.getParameter("username");
         String password = req.getParameter("password");
 
@@ -48,12 +42,25 @@ public class LoginServlet extends HttpServlet {
             if (u.getUsername().equals(username)) {
                 String hashed = RegisterServlet.hashPassword(password);
                 if (u.getPassword().equals(hashed)) {
-                    req.getSession().setAttribute("user", u);
-                    resp.sendRedirect("welcome");
+
+                    // 1. Генерирај 2FA код
+                    int code = (int) (100000 + Math.random() * 900000);
+
+                    // 2. Стави го user како pending
+                    req.getSession().setAttribute("pendingUser", u);
+
+                    // 3. Зачувај го кодот
+                    req.getSession().setAttribute("2faCode", code);
+
+                    System.out.println("2FA CODE: " + code); // само за тест
+
+                    // 4. Префрли на /verify
+                    resp.sendRedirect("/verify");
                     return;
                 }
             }
         }
+
         resp.getWriter().println("Invalid login attempt!");
     }
 }

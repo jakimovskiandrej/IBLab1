@@ -39,10 +39,28 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        IWebExchange webExchange = JakartaServletWebApplication
+                .buildApplication(getServletContext())
+                .buildExchange(req, resp);
+
         String username = req.getParameter("username");
         String password = req.getParameter("password");
         String email = req.getParameter("email");
         String hashPassword = hashPassword(password);
+        WebContext context = new WebContext(webExchange);
+
+        if (password.length() < 8) {
+            context.setVariable("error", "Password must be at least 8 characters long.");
+            springTemplateEngine.process("register.html", context, resp.getWriter());
+            return;
+        }
+
+        if (!password.matches(".*[A-Z].*")) {
+            context.setVariable("error", "Password must contain at least one uppercase letter.");
+            springTemplateEngine.process("register.html", context, resp.getWriter());
+            return;
+        }
+
         DataHolder.users.add(new User(email,username,hashPassword));
         resp.sendRedirect("/login");
     }
